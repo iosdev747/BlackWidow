@@ -17,7 +17,7 @@ import javax.swing.JLabel;
 public class StartGame extends javax.swing.JFrame {
 
 
-    ImageIcon ic = new   ImageIcon("/home/iosdev747/Downloads/background-image.jpg");
+    ImageIcon ic = new ImageIcon("/home/iosdev747/NetBeansProjects/BlackWidow/BlackWindow/src/blackwindow/background-image.jpg");
     JLabel background = new JLabel(ic);
         
     public StartGame() {
@@ -87,6 +87,11 @@ public class StartGame extends javax.swing.JFrame {
         quitButton.setForeground(new java.awt.Color(255, 255, 255));
         quitButton.setText("Quit");
         quitButton.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        quitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                quitButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -149,6 +154,10 @@ public class StartGame extends javax.swing.JFrame {
         }
     
     }//GEN-LAST:event_startButtonActionPerformed
+
+    private void quitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitButtonActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_quitButtonActionPerformed
 
     /**
      * @param args the command line arguments
