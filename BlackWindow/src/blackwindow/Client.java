@@ -5,19 +5,48 @@
  */
 package blackwindow;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
+import java.util.Scanner;
+
 /**
  *
  * @author iosdev747
  */
 public class Client extends javax.swing.JFrame {
 
+    static Socket socket;
+    static DataInputStream in;
+    static DataOutputStream out;
     /**
      * Creates new form Client
      */
     public Client() {
         initComponents();
+        try{
+            socket = new Socket("192.168.0.102",7777);
+            in = new DataInputStream(socket.getInputStream());
+            out = new DataOutputStream(socket.getOutputStream());
+            ClientManager input = new ClientManager(in,out,this);
+            Thread thread = new Thread(input);
+            thread.start();
+            connectingGUI();
+        }catch(Exception e){
+            System.out.println("Unable to connect with server");
+        }
+
     }
 
+    public void showGUI(){
+        waitingLabel.setVisible(false);
+    }
+    
+    public void connectingGUI(){
+        waitingLabel.setText("Waiting for other players to join");
+        tryButton.setVisible(false);
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -27,31 +56,60 @@ public class Client extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        waitingLabel = new javax.swing.JLabel();
+        tryButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jLabel1.setText("This is Client");
+        waitingLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        waitingLabel.setText("Failed to connect with server");
+
+        tryButton.setText("Try again");
+        tryButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tryButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(159, 159, 159)
-                .addComponent(jLabel1)
-                .addContainerGap(155, Short.MAX_VALUE))
+                .addGap(190, 190, 190)
+                .addComponent(tryButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(100, Short.MAX_VALUE)
+                .addComponent(waitingLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(78, 78, 78))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(80, 80, 80)
-                .addComponent(jLabel1)
-                .addContainerGap(205, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(143, 143, 143)
+                .addComponent(waitingLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tryButton)
+                .addContainerGap(111, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void tryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tryButtonActionPerformed
+        try{
+            socket = new Socket("192.168.0.102",7777);
+            in = new DataInputStream(socket.getInputStream());
+            out = new DataOutputStream(socket.getOutputStream());
+            ClientManager input = new ClientManager(in,out,this);
+            Thread thread = new Thread(input);
+            thread.start();
+            connectingGUI();
+        }catch(Exception e){
+            System.out.println("Unable to connect with server");
+        }
+    }//GEN-LAST:event_tryButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -89,6 +147,31 @@ public class Client extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JButton tryButton;
+    private javax.swing.JLabel waitingLabel;
     // End of variables declaration//GEN-END:variables
+}
+class ClientManager implements Runnable{
+    DataInputStream in;
+    DataOutputStream out;
+    Client c;
+    public ClientManager(DataInputStream in,DataOutputStream out,Client c){
+            this.in=in;
+            this.out=out;
+            this.c=c;
+    }
+    public void run(){
+        while(true){
+            String message;
+            try{
+                message = in.readUTF();
+                if(message.equals("start")){
+                    System.out.println(message);
+                    c.showGUI();
+                }
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
 }

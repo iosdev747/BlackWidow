@@ -11,12 +11,12 @@ class Driver {
         boolean some = player.playAgain();
         while (some) {
         	flag:{
-        		int get = player.bet(purse);
-        		while(get<1) {
-        			System.out.println("Minimum bet is on 1 Purse.");
-        			break flag;
-        		}
-	        	System.out.println ("****************");
+                    int get = player.bet(purse);
+                    while(get<1) {
+                            System.out.println("Minimum bet is on 1 Purse.");
+                            break flag;
+                    }
+                    System.out.println ("****************");
 	            System.out.println ("Dealer's Hand");
 	            System.out.println ("****************");
 	            dealer.initDeal();

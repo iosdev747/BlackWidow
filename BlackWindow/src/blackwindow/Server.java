@@ -156,7 +156,8 @@ class ServerManager implements Runnable{
     
     }
     public void run(){
-        try{serverSocket = new ServerSocket(7777);
+        try{
+            serverSocket = new ServerSocket(7777);
             while(true){
                 Socket socket = serverSocket.accept();
                 for(int i=0;i<4;i++){
