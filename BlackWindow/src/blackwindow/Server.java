@@ -5,6 +5,8 @@
  */
 package blackwindow;
 
+import java.awt.Color;
+import java.awt.FlowLayout;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,20 +14,43 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 
 /**
  *
  * @author iosdev747
  */
 public class Server extends javax.swing.JFrame {
+    boolean isGameStart;
+    Thread thread1;
+    ImageIcon ic = new ImageIcon("/home/iosdev747/NetBeansProjects/BlackWidow/BlackWindow/src/blackwindow/background-image.jpg");
+    JLabel background = new JLabel(ic);
+    int numberOfPlayers;
+    String dealerStatus;
+    Dealer dealer = new Dealer();
     /**
      * Creates new form Server
      */
     public Server() {
         initComponents();
-        ServerManager manage = new ServerManager();
-        Thread thread1 = new Thread(manage);
+        ServerLog("Loading components ...");
+        setTitle("BLACK JACK GAME");
+        setLocationRelativeTo(null);
+        background.setBounds(0, 0, 1366, 768);  //my resolution
+        getContentPane().setBackground(Color.red);
+        add(background);
+        background.setLayout(new FlowLayout());
+        startButton.setOpaque(false);
+        startButton.setContentAreaFilled(false);
+        startButton.setBorderPainted(true);
+        ServerLog("initialising network manager ...");
+        ServerLog("Waiting for players to join");
+        ServerManager manage = new ServerManager(this);
+        thread1 = new Thread(manage);
         thread1.start();
+        isGameStart=false;
+        startButton.setVisible(false);
     }
 
     /**
@@ -37,32 +62,86 @@ public class Server extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        startButton = new javax.swing.JButton();
+        logScrollPane = new javax.swing.JScrollPane();
+        logTextPane = new javax.swing.JTextPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jLabel1.setText("log..log..log..........log..log..log");
+        startButton.setBackground(new java.awt.Color(255, 255, 255));
+        startButton.setForeground(new java.awt.Color(255, 255, 255));
+        startButton.setText("Start");
+        startButton.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        startButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startButtonActionPerformed(evt);
+            }
+        });
+
+        logScrollPane.setViewportView(logTextPane);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(116, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addGap(68, 68, 68))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(logScrollPane)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 324, Short.MAX_VALUE)
+                        .addComponent(startButton, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(80, 80, 80)
-                .addComponent(jLabel1)
-                .addContainerGap(205, Short.MAX_VALUE))
+                .addGap(12, 12, 12)
+                .addComponent(startButton, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(logScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
+        thread1.stop();
+        startButton.setText("Stop");
+        if(isGameStart){
+            ServerLog("Game stoped");
+            StartGame object = new StartGame();
+            this.setVisible(false);
+            object.setVisible(true);
+        }
+        else{
+            ServerLog("Game started");
+            ServerLog("Welcome to the BlackJack table!");
+            ServerLog("Best of Luck! :) ");
+            ServerLog("");
+            dealer.initDeal();
+            ServerLog("Dealer card initialised");
+        }
+        isGameStart = true;
+        
+    }//GEN-LAST:event_startButtonActionPerformed
+
+    public boolean GameStatus(){
+        return isGameStart;
+    }
+    
+    public String getDealerCards(){
+        return dealer.getDealerCards();
+    }
+    
+    public void ServerLog(String message){
+        logTextPane.setText(logTextPane.getText() + "\n" + message);
+    }
+    
+    public void StartButton(boolean value){
+        startButton.setVisible(value);
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -99,7 +178,9 @@ public class Server extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane logScrollPane;
+    private javax.swing.JTextPane logTextPane;
+    private javax.swing.JButton startButton;
     // End of variables declaration//GEN-END:variables
 }
 class Users implements Runnable{
@@ -107,54 +188,117 @@ class Users implements Runnable{
     DataOutputStream out;
     DataInputStream in;
     Users[] user = new Users[4];
+    Player player;
+    int purse;
     String name;
     int pid;
-    int pidin;
-    int xin,yin;
-    public Users(DataOutputStream out, DataInputStream in,Users[] user, int pid){
+    String message;
+    Server server;
+    public Users(DataOutputStream out, DataInputStream in,Users[] user, int pid, Server server, int purse, Player player){
         this.out=out;
         this.in=in;
         this.user=user;
         this.pid=pid;
+        this.server=server;
+        this.purse=purse;
+        this.player=player;
     }
     public void run(){
-        try {
-            out.writeInt(pid);
-        } catch (IOException ex) {
-            Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        while(true){
-            try{
-                pidin = in.readInt();
-                xin=in.readInt();
-                yin=in.readInt();
-                for(int i=0;i<4;i++){
-                    if(user[i]!=null){
-                        user[i].out.writeInt(pidin);
-                        user[i].out.writeInt(xin);
-                        user[i].out.writeInt(yin);
-                    }
+        
+        try{
+            user[pid].out.writeUTF("Your pid is :" + pid);
+            server.ServerLog("Player pID: " + pid + " connected with purse: " + purse);
+            while(true){
+                System.out.print(".");
+                if(server.GameStatus()){
+                    break;
                 }
             }
-            catch(IOException e){
-                user[pid]=null;
-                break;
-            }
+            String dealercards=server.getDealerCards();
+            out.writeUTF(dealercards);
+        }catch(IOException e){
+            server.ServerLog("Player pID: " + pid + " disconnected");
+            user[pid]=null;
         }
     }
 }
 
 
-
+class Input implements Runnable{
+    Server server;
+    int numberOfPlayers;
+    Users users[];
+    String[] status;
+    public Input(Users users[],int numberOfPlayers,Server server){
+        this.server=server;
+        this.numberOfPlayers=numberOfPlayers;
+        this.users=users;
+        status = new String[numberOfPlayers];
+    }
+    public void run(){
+        try {
+            for(int i=0;i<numberOfPlayers;i++){
+                for(int j=0;j<numberOfPlayers;j++){
+                    users[j].out.writeUTF("p"+i);
+                }
+                int bet=users[i].in.readInt();
+                sendCards();
+                label:{while(true){
+                    String choice=users[i].in.readUTF();
+                    if(choice.equals("yes")){
+                        if(users[i].player.playHand()){
+                            status[i]="busted";
+                            break label;
+                        }
+                    }
+                    else{
+                        break label;
+                    }
+                }}
+                if(!status[i].equals("busted")&&!server.dealerStatus.equals("busted")){
+                    status[i]=""+users[i].player.compareHands(server.dealer.getHandValue(),bet);
+                }
+                else if(!status[i].equals("busted")&&server.dealerStatus.equals("busted")){
+                    status[i]=""+bet;
+                }
+                else if(status[i].equals("busted")&&!server.dealerStatus.equals("busted")){
+                    status[i]=""+"-"+bet;
+                }
+                else if(status[i].equals("busted")&&server.dealerStatus.equals("busted")){
+                    status[i]=""+bet;
+                }
+            }
+        } catch (IOException ex) {
+                server.ServerLog("Unable to connect");
+        }
+    }
+    public void sendCards(){
+        try {
+            for(int i=0;i<numberOfPlayers;i++){
+                for(int j=0;j<numberOfPlayers;j++){
+                    users[j].out.writeUTF(i+"-"+users[i].player.getPlayerCards());
+                    server.ServerLog("To"+j+"="+i+"-"+users[i].player.getPlayerCards());
+                }
+            }
+        } catch (IOException ex) {
+                server.ServerLog("Unable to connect");
+        }
+    }
+}
 
 
 class ServerManager implements Runnable{
 
     static ServerSocket serverSocket;
     static Users[] user = new Users[4];
-    public ServerManager(){
+    static Server server;
+    int purse = 100;
+    Player player = new Player(purse);
     
+    public ServerManager(Server server){
+        this.server = server;
     }
+    
     public void run(){
         try{
             serverSocket = new ServerSocket(7777);
@@ -164,15 +308,27 @@ class ServerManager implements Runnable{
                     if(user[i]==null){
                         DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                         DataInputStream in = new DataInputStream(socket.getInputStream());
-                        user[i]=new Users(out,in,user,i);
+                        user[i]=new Users(out,in,user,i,server,purse,player);
                         Thread thread = new Thread(user[i]);
                         thread.start();
                         break;
                     }
                 }
+                server.ServerLog("+"+server.numberOfPlayers+1);
+                if(server.numberOfPlayers > 0)
+                    server.StartButton(true);
             }
         }catch(Exception e){
             e.printStackTrace();
+            server.ServerLog("" + e);
+        }
+        int noofPlys=0;
+        for(noofPlys=0;user[noofPlys]!=null&&noofPlys<4;noofPlys++);
+        Input input = new Input(user,noofPlys,server);
+        Thread inputThread = new Thread(input);
+        inputThread.start();
+        if(server.dealer.playHand()){
+            server.dealerStatus="busted";
         }
     }
 }

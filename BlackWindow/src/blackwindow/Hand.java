@@ -9,7 +9,7 @@ class Hand {
     /**
      * method creates the deck
      */
-    public static void createDeck () {
+    public void createDeck () {
         int m = 0;
         for (int j = 0; j < 4; j++) {
             for (int k = 1; k < 14; k++) {
@@ -93,6 +93,18 @@ class Hand {
                 System.out.println ("Null Card");
             }
         }
+    }
+    
+    public String getHand(){            //suit:rank;suit:rank;...suit:rank
+        String cards="";
+        for(int k= 0; hand[k] != null ; k++) {
+            cards+=hand[k].getSuit();
+            cards+=":";
+            cards+=hand[k].getRank();
+            cards+=";";
+        }
+        cards=cards.substring(0, cards.length()-1);
+        return cards;
     }
 
     public int evaluateHand() {
