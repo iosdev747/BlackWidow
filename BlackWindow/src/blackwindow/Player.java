@@ -32,6 +32,10 @@ class Player {
         return playerHand.evaluateHand();
     }
 
+    public String getPlayerCards(){
+        return playerHand.getHand();
+    }
+    
     /**
      * para@1 dealer's hand value
      * compare the values of cards in player's and dealer's hand
@@ -115,8 +119,6 @@ class Player {
     }
 
     public boolean playHand() {
-    	System.out.print ("Would you like to draw another card? ");
-        while(sc.next().equals("y")) {
             int handCount = 0;
             for (int i = 0; i < playerHand.hand.length; i++) {
                 if (playerHand.hand[i] != null) {
@@ -133,8 +135,6 @@ class Player {
                 System.out.println ("The player has busted.");
                 return true;
             }
-            System.out.print ("Would you like to draw another card? ");
-        }
         return false;
     }
     

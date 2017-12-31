@@ -1,12 +1,13 @@
 package blackwindow;
 
 class Dealer {
-    private Hand dealerHand = new Hand();
+    private Hand dealerHand;
 
     /**
      * prints the dealer's output in the window
      */
     public Dealer () {
+        dealerHand = new Hand();
         dealerHand.createDeck();
         dealerHand.shuffleDeck();
     }
@@ -27,6 +28,10 @@ class Dealer {
         return dealerHand.evaluateHand();
     }
 
+    public String getDealerCards(){
+        return dealerHand.getHand();
+    }
+    
     public boolean playHand() {
         // draw cards until dealerHand >= 16
         while (getHandValue() < 16) {

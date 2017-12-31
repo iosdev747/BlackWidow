@@ -24,6 +24,6 @@ class Card {
         String[] suits = { "Clubs", "Diamonds", "Hearts", "Spades" };
         String[] ranks = { "narf", "Ace", "2", "3", "4", "5", "6",
             "7", "8", "9", "10", "Jack", "Queen", "King" }; //zeorth element is narf and not normally used
-        System.out.println (ranks[rank] + " of " + suits[suit]);
+        System.out.println(ranks[rank] + " of " + suits[suit]);
     } //end printCard
 } //end class
